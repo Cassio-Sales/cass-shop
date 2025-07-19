@@ -1,5 +1,4 @@
-import { GetServerSideProps, GetStaticPaths, GetStaticProps } from 'next'
-import { useRouter } from 'next/router'
+import { GetStaticPaths, GetStaticProps } from 'next'
 import Image from 'next/image'
 import Stripe from 'stripe'
 import { stripe } from '../../lib/stripe'
@@ -9,7 +8,6 @@ import {
   ProductDetails
 } from '../../styles/pages/product'
 
-
 interface ProductProps {
   product: {
     id: string
@@ -17,13 +15,14 @@ interface ProductProps {
     imageUrl: string
     price: string
     description: string
+    defaultPriceId: string
   }
 }
 
-
-
 export default function Product({ product }: ProductProps) {
-  const { query } = useRouter()
+  function handleBuyButton() {
+    console.log(product.defaultPriceId)
+  }
 
   return (
     <ProductContainer>
@@ -37,7 +36,7 @@ export default function Product({ product }: ProductProps) {
 
         <p>{product.description}</p>
 
-        <button>Buy</button>
+        <button onClick={handleBuyButton}>Comprar agora</button>
       </ProductDetails>
     </ProductContainer>
   )
@@ -45,11 +44,10 @@ export default function Product({ product }: ProductProps) {
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
-    paths: [{ params: { id: 'prod_Sds8lg00uLsjBg' } }],
-    fallback: 'blocking',
+    paths: [{ params: { id: 'prod_MLH5Wy0Y97hDAC' } }],
+    fallback: 'blocking'
   }
 }
-
 
 export const getStaticProps: GetStaticProps<any, { id: string }> = async ({
   params
@@ -68,13 +66,14 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({
         id: product.id,
         name: product.name,
         imageUrl: product.images[0],
-        price: new Intl.NumberFormat('en-UK', {
+        price: new Intl.NumberFormat('en-GB', {
           style: 'currency',
           currency: 'GBP'
         }).format(price.unit_amount / 100),
-        description: product.description,   
+        description: product.description,
+        defaultPriceId: price.id
       }
     },
-    //revalidate: 60 * 60 * 1 // 1 hour
+    revalidate: 60 * 60 * 1 // 1 hour
   }
 }
